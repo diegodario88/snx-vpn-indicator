@@ -14,20 +14,16 @@ const VpnIndicator = GObject.registerClass(
   },
   class VpnIndicator extends PanelMenu.Button {
     _init(user) {
-      super._init(0.0, "VPN and SNX Indicator", false);
+      super._init(0.0, "VPN SNX Indicator", false);
 
       this.uiIcon = new St.Icon({
         icon_name: "network-vpn-symbolic",
         style_class: "system-status-icon",
-        style: "color: #68A213;",
       });
 
       this.uiBtnVPN = new St.Label({
         y_align: Clutter.ActorAlign.CENTER,
         style_class: "system-status-icon",
-        style:
-          "color: #68A213; font-weight: bold; font-size: small; margin: 0px; padding: 0px;",
-        text: "",
       });
 
       this.uiBox = new St.BoxLayout();
@@ -72,17 +68,16 @@ const VpnIndicator = GObject.registerClass(
     }
 
     _refresh() {
-      let check_snx_vpn = this._checkSNX();
+      let hasConnection = this._checkSNX();
+      this.uiMiDisconnectSNX.visible = hasConnection == 0;
+      this.visible = hasConnection == 0;
 
-      this.uiMiDisconnectSNX.visible = check_snx_vpn == 0;
-      this.visible = check_snx_vpn == 0;
-
-      if (check_snx_vpn == 0) {
-        this.uiBtnVPN.set_text("SNX/VPN");
-      } else {
-        this.uiBtnVPN.set_text("");
+      if (hasConnection == 0) {
+        this.uiBtnVPN.set_text("SNX-VPN");
+        return true;
       }
 
+      this.uiBtnVPN.set_text("");
       return true;
     }
 

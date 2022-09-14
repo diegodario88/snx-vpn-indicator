@@ -1,5 +1,6 @@
 {
     "uuid": "vpn-snx-indicator@diego.dario",
+    "version": 1,
     "shell-version": [
         "40.0",
         "42.1",
