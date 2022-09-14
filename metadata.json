@@ -1,0 +1,11 @@
+{
+    "uuid": "vpn-snx-indicator@diego.dario",
+    "shell-version": [
+        "40.0",
+        "42.1",
+        "43.0"
+    ],
+    "url": "https://github.com/diegodario88/vpn-snx-indicator",
+    "name": "VPN SNX Indicator",
+    "description": "A status indicator for SNX(Check Point) VPN connection."
+}
