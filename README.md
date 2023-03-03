@@ -1,6 +1,6 @@
 ## SNX VPN Indicator Extension
 
-![](img/wip.png) 
+![](assets/wip.png) 
 
 This is Fork at https://github.com/howdoicomputer/vpn-indicator-shell-extension
 
@@ -9,7 +9,7 @@ The extension adds an indicator to the menu with information about the active SN
 ## Installation
 
 1. `git clone https://github.com/diegodario88/vpn-snx-indicator.git`
-2. `./install.sh`
+2. `./scripts/install.sh`
 
 3. Then active the plugin via [extension app]('https://apps.gnome.org/pt-BR/app/org.gnome.Extensions/').
 
