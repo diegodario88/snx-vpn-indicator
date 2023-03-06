@@ -10,17 +10,18 @@ class Extension {
   _timeout = null;
   _indicator = null;
   _intervalId = 0;
-  _command = ["sh", "-c", "ifconfig -a | grep 'tunsnx'"];
 
   constructor(uuid) {
     this._uuid = uuid;
     ExtensionUtils.initTranslations(Me.metadata.name);
   }
 
-  checkSnxConnectionAsync() {
-    const [success_, pid, stdin, stdout, stderr] = GLib.spawn_async_with_pipes(
+  checkSnxConnectivity() {
+    const ifConfigCommand = ["sh", "-c", "ifconfig -a | grep 'tunsnx'"];
+
+    const [, , , stdout] = GLib.spawn_async_with_pipes(
       null,
-      this._command,
+      ifConfigCommand,
       null,
       GLib.SpawnFlags.SEARCH_PATH,
       null
@@ -82,7 +83,7 @@ class Extension {
   }
 
   refresh() {
-    const hasConnection = this.checkSnxConnectionAsync();
+    const hasConnection = this.checkSnxConnectivity();
 
     if (hasConnection) {
       this.showVpnIcon();
