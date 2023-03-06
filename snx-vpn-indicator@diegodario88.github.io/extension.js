@@ -10,50 +10,31 @@ class Extension {
   _timeout = null;
   _indicator = null;
   _intervalId = 0;
+  _command = ["sh", "-c", "ifconfig -a | grep 'tunsnx'"];
 
   constructor(uuid) {
     this._uuid = uuid;
     ExtensionUtils.initTranslations(Me.metadata.name);
   }
 
-  checkConnection() {
-    const [, stdoutPipe] = GLib.pipe(GLib.PipeFlags.NONBLOCK);
-    const [, stderrPipe] = GLib.pipe(GLib.PipeFlags.NONBLOCK);
-
-    const args = ["ifconfig", "-a"];
-    const grepArgs = ["grep", "-E", "^(tun0|proton0|ppp0|tunsnx)"];
-
-    const process = Gio.Subprocess.newv(
-      [...args, "|", ...grepArgs],
-      Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE
-    );
-
-    process.communicate_async(
+  checkSnxConnectionAsync() {
+    const [success_, pid, stdin, stdout, stderr] = GLib.spawn_async_with_pipes(
       null,
-      stdoutPipe,
-      stderrPipe,
+      this._command,
       null,
-      null,
-      0,
+      GLib.SpawnFlags.SEARCH_PATH,
       null
     );
 
-    process.wait_async((process, result) => {
-      const [, exitCode] = process.wait_check_finish(result);
-
-      if (exitCode === 0) {
-        const [_, stdoutData] = stdoutPipe.read_all(null);
-        if (stdoutData.toString().trim() !== "") {
-          showVpnIcon();
-        } else {
-          hideVpnIcon();
-        }
-      } else {
-        const [_, stderrData] = stderrPipe.read_all(null);
-        log(`ifconfig error: ${stderrData}`);
-        hideVpnIcon();
-      }
+    const stdoutInputStream = new Gio.DataInputStream({
+      base_stream: new Gio.UnixInputStream({ fd: stdout }),
     });
+
+    const [result] = stdoutInputStream.read_line(null);
+
+    stdoutInputStream.close(null);
+
+    return result;
   }
 
   disconnectSync() {
@@ -65,10 +46,14 @@ class Extension {
       null
     );
 
-    this.checkConnection();
+    this.refresh();
   }
 
   showVpnIcon() {
+    if (this._indicator) {
+      return;
+    }
+
     const icon = new St.Icon({
       icon_name: "network-vpn-symbolic",
       style_class: "system-status-icon",
@@ -96,12 +81,23 @@ class Extension {
     }
   }
 
+  refresh() {
+    const hasConnection = this.checkSnxConnectionAsync();
+
+    if (hasConnection) {
+      this.showVpnIcon();
+      return;
+    }
+
+    this.hideVpnIcon();
+  }
+
   enable() {
-    this.checkConnection();
+    this.refresh();
     this._intervalId = GLib.timeout_add_seconds(
       GLib.PRIORITY_DEFAULT,
       60,
-      this.checkConnection.bind(this)
+      this.refresh.bind(this)
     );
   }
 
@@ -110,6 +106,7 @@ class Extension {
       GLib.source_remove(this._intervalId);
       this._intervalId = 0;
     }
+
     this.hideVpnIcon();
   }
 }
