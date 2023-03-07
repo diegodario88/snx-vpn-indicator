@@ -29,7 +29,7 @@ let indicator = null;
 const SNX_DEVICE_NAME = "tunsnx";
 
 function init() {
-  networkManagerClient = NM.Client.new(null);
+  ExtensionUtils.initTranslations(Me.metadata.uuid);
 }
 
 function enable() {
