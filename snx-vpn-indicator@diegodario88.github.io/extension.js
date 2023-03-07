@@ -1,117 +1,92 @@
-const { St, Clutter, GLib, Gio } = imports.gi;
+/*
+ * Snx VPN Indicator for GNOME Shell 43+
+ * Copyright 2023 Diego Dario
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * If this extension breaks your desktop you get to keep all of the pieces...
+ */
 
+const { NM, St } = imports.gi;
+const PanelMenu = imports.ui.panelMenu;
+const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const Main = imports.ui.main;
-const PanelMenu = imports.ui.panelMenu;
-const PopupMenu = imports.ui.popupMenu;
 
-class Extension {
-  _timeout = null;
-  _indicator = null;
-  _intervalId = 0;
-
-  constructor(uuid) {
-    this._uuid = uuid;
-    ExtensionUtils.initTranslations(Me.metadata.name);
-  }
-
-  checkSnxConnectivity() {
-    const ifConfigCommand = ["sh", "-c", "ifconfig -a | grep 'tunsnx'"];
-
-    const [, , , stdout] = GLib.spawn_async_with_pipes(
-      null,
-      ifConfigCommand,
-      null,
-      GLib.SpawnFlags.SEARCH_PATH,
-      null
-    );
-
-    const stdoutInputStream = new Gio.DataInputStream({
-      base_stream: new Gio.UnixInputStream({ fd: stdout }),
-    });
-
-    const [result] = stdoutInputStream.read_line(null);
-
-    stdoutInputStream.close(null);
-
-    return result;
-  }
-
-  disconnectSync() {
-    GLib.spawn_async(
-      null,
-      ["snx", "-d"],
-      null,
-      GLib.SpawnFlags.SEARCH_PATH,
-      null
-    );
-
-    this.refresh();
-  }
-
-  showVpnIcon() {
-    if (this._indicator) {
-      return;
-    }
-
-    const icon = new St.Icon({
-      icon_name: "network-vpn-symbolic",
-      style_class: "system-status-icon",
-    });
-
-    const popupItem = new PopupMenu.PopupMenuItem("Disconnect from SNX/VPN");
-
-    popupItem.connect("activate", () => {
-      this.disconnectSync();
-      this.hideVpnIcon();
-      Main.notify("Done disconnecting");
-    });
-
-    this._indicator = new PanelMenu.Button(0.0, Me.metadata.name, false);
-    this._indicator.add_child(icon);
-    this._indicator.menu.addMenuItem(popupItem);
-
-    Main.panel.addToStatusArea(this._uuid, this._indicator);
-  }
-
-  hideVpnIcon() {
-    if (this._indicator) {
-      this._indicator.destroy();
-      this._indicator = null;
-    }
-  }
-
-  refresh() {
-    const hasConnection = this.checkSnxConnectivity();
-
-    if (hasConnection) {
-      this.showVpnIcon();
-      return;
-    }
-
-    this.hideVpnIcon();
-  }
-
-  enable() {
-    this.refresh();
-    this._intervalId = GLib.timeout_add_seconds(
-      GLib.PRIORITY_DEFAULT,
-      60,
-      this.refresh.bind(this)
-    );
-  }
-
-  disable() {
-    if (this._intervalId) {
-      GLib.source_remove(this._intervalId);
-      this._intervalId = 0;
-    }
-
-    this.hideVpnIcon();
-  }
-}
+let networkManagerClient = null;
+let indicator = null;
+const SNX_DEVICE_NAME = "tunsnx";
 
 function init() {
-  return new Extension(Me.metadata.uuid);
+  networkManagerClient = NM.Client.new(null);
+}
+
+function enable() {
+  networkManagerClient.connect("any-device-added", onAnyDeviceAdded);
+  networkManagerClient.connect("any-device-removed", onAnyDeviceRemoved);
+}
+
+function disable() {
+  networkManagerClient.disconnect(onAnyDeviceAdded);
+  networkManagerClient.disconnect(onAnyDeviceRemoved);
+  networkManagerClient = null;
+  destroyVpnIndicator();
+}
+
+function onAnyDeviceAdded(_, device) {
+  const description = device.get_description();
+  const shouldAvoid = description !== SNX_DEVICE_NAME;
+
+  if (shouldAvoid) {
+    return;
+  }
+
+  createVpnIndicator();
+}
+
+function onAnyDeviceRemoved(_, device) {
+  const description = device.get_description();
+  const shouldAvoid = description !== SNX_DEVICE_NAME;
+
+  if (shouldAvoid) {
+    return;
+  }
+
+  destroyVpnIndicator();
+}
+
+function destroyVpnIndicator() {
+  if (!indicator) {
+    return;
+  }
+
+  indicator.destroy();
+  indicator = null;
+}
+
+function createVpnIndicator() {
+  if (indicator) {
+    return;
+  }
+
+  const icon = new St.Icon({
+    icon_name: "network-vpn-symbolic",
+    style_class: "system-status-icon",
+  });
+
+  indicator = new PanelMenu.Button(0.0, Me.metadata.name, false);
+  indicator.add_child(icon);
+
+  Main.panel.addToStatusArea(Me.metadata.uuid, indicator);
 }

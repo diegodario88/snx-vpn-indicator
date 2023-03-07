@@ -2,12 +2,10 @@
     "uuid": "snx-vpn-indicator@diegodario88.github.io",
     "version": 1.1,
     "shell-version": [
-        "40.0",
-        "42.1",
         "43.0",
         "44.0"
     ],
     "url": "https://github.com/diegodario88/snx-vpn-indicator",
-    "name": "Snx VPN Status Indicator",
-    "description": "A status indicator for SNX(Check Point) VPN connection."
+    "name": "SNX VPN Indicator",
+    "description": "Adds an indicator to panel when there's a SNX(Check Point) VPN connection."
 }

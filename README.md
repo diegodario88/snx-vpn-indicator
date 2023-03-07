@@ -1,10 +1,8 @@
-## SNX VPN Indicator Extension
+# GNOME Shell Extension - SNX VPN Indicator
 
-![](assets/wip.png) 
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-This is Fork at https://github.com/howdoicomputer/vpn-indicator-shell-extension
-
-The extension adds an indicator to the menu with information about the active SNX VPN connection. Also, it provides a way to disconnect it from the context menu.
+The extension simply adds an indicator ![](assets/network-vpn-symbolic.svg) to the panel when there's a SNX (check-point VPN) connection.
 
 ## Installation
 
@@ -13,4 +11,5 @@ The extension adds an indicator to the menu with information about the active SN
 
 3. Then active the plugin via [extension app]('https://apps.gnome.org/pt-BR/app/org.gnome.Extensions/').
 
+4. Reload your session
 ---
