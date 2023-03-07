@@ -33,6 +33,10 @@ function init() {
 }
 
 function enable() {
+  if (!networkManagerClient) {
+    networkManagerClient = NM.Client.new(null);
+  }
+
   networkManagerClient.connect("any-device-added", onAnyDeviceAdded);
   networkManagerClient.connect("any-device-removed", onAnyDeviceRemoved);
 }
