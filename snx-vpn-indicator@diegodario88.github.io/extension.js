@@ -37,6 +37,15 @@ function enable() {
     networkManagerClient = NM.Client.new(null);
   }
 
+  const shouldCreateIndicatorOnEnable = networkManagerClient
+    .get_devices()
+    .map((device) => device.get_description().trim())
+    .find((description) => description === SNX_DEVICE_NAME);
+
+  if (shouldCreateIndicatorOnEnable) {
+    createVpnIndicator();
+  }
+
   networkManagerClient.connect("any-device-added", onAnyDeviceAdded);
   networkManagerClient.connect("any-device-removed", onAnyDeviceRemoved);
 }
@@ -89,7 +98,7 @@ function createVpnIndicator() {
     style_class: "system-status-icon",
   });
 
-  indicator = new PanelMenu.Button(0.0, Me.metadata.name, false);
+  indicator = new PanelMenu.Button(0.0, Me.metadata.name, true);
   indicator.add_child(icon);
 
   Main.panel.addToStatusArea(Me.metadata.uuid, indicator);
