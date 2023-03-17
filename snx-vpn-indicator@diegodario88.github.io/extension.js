@@ -23,7 +23,6 @@ const { NM } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Util = Me.imports.util;
-const Toggle = Me.imports.toggle;
 const Indicator = Me.imports.indicator;
 
 class Extension {
