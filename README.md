@@ -31,7 +31,7 @@ git clone https://github.com/diegodario88/vpn-snx-indicator.git
 
 -  You should have The SNX client in order to get it to work.
     - [Here](https://gist.github.com/rkueny/301f7ead21ed2a0ee8bbe2d755bed90b) you can find a gist that may help you with it .
-    - You should have the `.snxrc` in your home directory [here is one example](examples/.snxrc)
+    - You should have the `.snxrc` in your home directory [here is one example](examples/SNXRC.md)
 
 <br>
 
