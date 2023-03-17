@@ -9,5 +9,8 @@
     "name": "SNX VPN Indicator",
     "description": "Adds an indicator to panel when there's a SNX(Check Point) VPN connection.",
     "settings-schema": "org.gnome.shell.extensions.snx-indicator",
-    "gettext-domain": "snx-indicator"
+    "gettext-domain": "snx-indicator",
+    "scripts": [
+        "scripts/bridge-snx-cli.sh"
+    ]
 }

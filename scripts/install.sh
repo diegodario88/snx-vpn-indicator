@@ -1,16 +1,26 @@
 #!/bin/bash
 
+# Set the ID of your GNOME extension
+EXTENSION_ID="snx-vpn-indicator@diegodario88.github.io"
+
+# Set the name of your packed extension file
+PACKED_EXTENSION_FILE="$EXTENSION_ID.shell-extension.zip"
+
 echo "Packing the extension..."
 
-rm -v snx-vpn-indicator@diegodario88.github.io.shell-extension.zip
+# Remove the old zip if it exists
+if [ -f "$PACKED_EXTENSION_FILE" ]; then
+  rm -v "$PACKED_EXTENSION_FILE"
+fi
 
-gnome-extensions pack snx-vpn-indicator@diegodario88.github.io
+
+gnome-extensions pack --extra-source='../scripts/bridge-snx-cli.sh' --extra-source='indicator.js' --extra-source='toggle.js' --extra-source='util.js' "$EXTENSION_ID"
 
 echo "Uninstalling old extension..."
-gnome-extensions uninstall snx-vpn-indicator@diegodario88.github.io
-rm -rfv ~/.local/share/gnome-shell/extensions/snx-vpn-indicator@diegodario88.github.io
+gnome-extensions uninstall "$EXTENSION_ID"
+rm -rfv ~/.local/share/gnome-shell/extensions/"$EXTENSION_ID"
 
 echo "Installing the extension..."
-gnome-extensions install snx-vpn-indicator@diegodario88.github.io.shell-extension.zip
+gnome-extensions install "$PACKED_EXTENSION_FILE"
 
 echo "Done! Now restart your session."
