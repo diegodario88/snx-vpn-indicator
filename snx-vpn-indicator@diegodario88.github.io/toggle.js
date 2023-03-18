@@ -80,6 +80,84 @@ var SnxToggle = GObject.registerClass(
       this._separator.label.text = 'Connector';
     }
 
+    /**
+     *
+     * @param {Gio.Cancellable} cancellable
+     * @returns void
+     */
+    async _handleCheckedAction(cancellable) {
+      try {
+        const passwordPromptOutput = await Util.execCommunicate(
+          [
+            'zenity',
+            '--password',
+            '--title=SNX VPN Authentication',
+            '--timeout=20'
+          ],
+          null,
+          cancellable
+        );
+
+        if (!passwordPromptOutput) {
+          this.checked = false;
+          this.icon_name = Util.getConstantByKey('DISABLED_VPN_ICON');
+          return;
+        }
+
+        const stdout = await Util.execCommunicate(
+          [`${Me.dir.get_path()}/bridge-snx-cli.sh`, passwordPromptOutput],
+          null
+        );
+
+        const loginResponse = stdout
+          .split('Please enter your password:')
+          .pop()
+          .trimEnd()
+          .trimStart();
+
+        if (
+          loginResponse.includes('Access denied') ||
+          loginResponse.includes('Authentication failed.')
+        ) {
+          this.checked = false;
+          this.icon_name = Util.getConstantByKey('DISABLED_VPN_ICON');
+
+          throw new Gio.IOErrorEnum({
+            code: Gio.IOErrorEnum.FAILED,
+            message: loginResponse
+          });
+        }
+
+        this.icon_name = Util.getConstantByKey('ENABLED_VPN_ICON;');
+        this._addSessionParameters(loginResponse);
+        Main.notify(_('SNX VPN'), _('Successfully connected to VPN'));
+      } catch (error) {
+        logError(error);
+        if (error.code !== 14) {
+          Main.notifyError(_('SNX VPN'), _(error.message));
+        }
+
+        this.checked = false;
+        this.icon_name = Util.getConstantByKey('DISABLED_VPN_ICON');
+      }
+    }
+
+    /**
+     *
+     * @param {Gio.Cancellable} cancellable
+     * @returns void
+     */
+    _handleUncheckedAction(cancellable) {
+      Util.execCommunicate(['/usr/bin/snx', '-d'], null, cancellable)
+        .then((output) => {
+          this._removeSessionParameters();
+          Main.notify(_('SNX VPN'), _(output));
+        })
+        .catch((error) => {
+          Main.notifyError(_('SNX VPN'), _(error.message));
+        });
+    }
+
     async _toggleMode() {
       if (this.previousCancellable) {
         this.previousCancellable.cancel();
@@ -89,73 +167,12 @@ var SnxToggle = GObject.registerClass(
       this.icon_name = Util.getConstantByKey('ACQUIRING_VPN_ICON');
 
       if (this.checked) {
-        Util.execCommunicate(
-          [
-            'zenity',
-            '--password',
-            '--title=SNX VPN Authentication',
-            '--timeout=20'
-          ],
-          null,
-          cancellable
-        )
-          .then(async (output) => {
-            if (!output) {
-              this.checked = false;
-              this.icon_name = Util.getConstantByKey('DISABLED_VPN_ICON');
-              return;
-            }
-
-            const stdout = await Util.execCommunicate(
-              [`${Me.dir.get_path()}/bridge-snx-cli.sh`, output],
-              null
-            );
-            const loginResponse = stdout
-              .split('Please enter your password:')
-              .pop()
-              .trimEnd()
-              .trimStart();
-
-            if (
-              loginResponse.includes('Access denied') ||
-              loginResponse.includes('Authentication failed.')
-            ) {
-              this.checked = false;
-              this.icon_name = Util.getConstantByKey('DISABLED_VPN_ICON');
-
-              throw new Gio.IOErrorEnum({
-                code: Gio.IOErrorEnum.FAILED,
-                message: loginResponse
-              });
-            }
-
-            this.icon_name = Util.getConstantByKey('ENABLED_VPN_ICON;');
-            this._addSessionParameters(loginResponse);
-            Main.notify(_('SNX VPN'), _('Successfully connected to VPN'));
-          })
-          .catch((error) => {
-            logError(error);
-            if (error.code !== 14) {
-              Main.notifyError(_('SNX VPN'), _(error.message));
-            }
-
-            this.checked = false;
-            this.icon_name = Util.getConstantByKey('DISABLED_VPN_ICON');
-          });
-
+        this._handleCheckedAction(cancellable);
         this.previousCancellable = cancellable;
         return;
       }
 
-      Util.execCommunicate(['/usr/bin/snx', '-d'], null, cancellable)
-        .then((output) => {
-          this._removeSessionParameters();
-          Main.notify(_('SNX VPN'), _(output));
-        })
-        .catch((error) => {
-          Main.notifyError(_('SNX VPN'), _(error.message));
-        });
-
+      this._handleUncheckedAction(cancellable);
       this.previousCancellable = cancellable;
     }
   }
