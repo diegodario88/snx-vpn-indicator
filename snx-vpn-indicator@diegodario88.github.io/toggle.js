@@ -128,13 +128,21 @@ var SnxToggle = GObject.registerClass(
           });
         }
 
-        this.icon_name = Util.getConstantByKey('ENABLED_VPN_ICON;');
+        this.icon_name = Util.getConstantByKey('ENABLED_VPN_ICON');
         this._addSessionParameters(loginResponse);
-        Main.notify(_('SNX VPN'), _('Successfully connected to VPN'));
+
+        Util.vpnNotify(
+          _('SNX VPN'),
+          _('Successfully connected to VPN'),
+          Util.getConstantByKey('ENABLED_VPN_ICON')
+        );
       } catch (error) {
-        logError(error);
         if (error.code !== 14) {
-          Main.notifyError(_('SNX VPN'), _(error.message));
+          Util.vpnNotify(
+            _('SNX VPN'),
+            _(error.message),
+            Util.getConstantByKey('NO_ROUTE_VPN_ICON')
+          );
         }
 
         this.checked = false;
@@ -151,10 +159,18 @@ var SnxToggle = GObject.registerClass(
       Util.execCommunicate(['/usr/bin/snx', '-d'], null, cancellable)
         .then((output) => {
           this._removeSessionParameters();
-          Main.notify(_('SNX VPN'), _(output));
+          Util.vpnNotify(
+            _('SNX VPN'),
+            _(output),
+            Util.getConstantByKey('DISCONNECTED_VPN_ICON')
+          );
         })
         .catch((error) => {
-          Main.notifyError(_('SNX VPN'), _(error.message));
+          Util.vpnNotify(
+            _('SNX VPN'),
+            _(error.message),
+            Util.getConstantByKey('NO_ROUTE_VPN_ICON')
+          );
         });
     }
 
