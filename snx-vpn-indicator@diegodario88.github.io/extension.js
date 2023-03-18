@@ -72,6 +72,8 @@ class Extension {
     this._networkManagerClient.disconnect(
       this.handleOnAnyDeviceRemoved.bind(this)
     );
+
+    this._networkManagerClient = null;
   }
 
   /**

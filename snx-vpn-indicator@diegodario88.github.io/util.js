@@ -90,8 +90,34 @@ function getConstantByKey(key) {
     SNX_LABEL: 'SNX VPN',
     ENABLED_VPN_ICON: 'network-vpn-symbolic',
     DISABLED_VPN_ICON: 'network-vpn-disabled-symbolic',
+    DISCONNECTED_VPN_ICON: 'network-vpn-disconnected-symbolic',
     ACQUIRING_VPN_ICON: 'network-vpn-acquiring-symbolic',
+    NO_ROUTE_VPN_ICON: 'network-vpn-no-route-symbolic',
     HOME_DIR: GLib.get_home_dir()
   };
   return constants[key];
+}
+
+/**
+ *
+ * @param {string} text
+ * @param {string} body
+ * @param {string} icon
+ */
+function vpnNotify(text, body, icon) {
+  const source = new imports.ui.messageTray.Source(
+    _(getConstantByKey('SNX_LABEL')),
+    icon
+  );
+
+  imports.ui.main.messageTray.add(source);
+
+  const notification = new imports.ui.messageTray.Notification(
+    source,
+    text,
+    body
+  );
+
+  notification.setTransient(true);
+  source.showNotification(notification);
 }
