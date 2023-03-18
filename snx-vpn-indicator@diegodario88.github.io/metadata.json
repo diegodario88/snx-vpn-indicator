@@ -1,10 +1,12 @@
 {
-    "uuid": "snx-vpn-indicator@diegodario88.github.io",
-    "version": 4,
-    "shell-version": [
-        "43"
-    ],
-    "url": "https://github.com/diegodario88/snx-vpn-indicator",
-    "name": "SNX VPN Indicator",
-    "description": "This extension adds VPN functionality to the quickSettings by integrating the SSL Network Extender (SNX CLI) client"
+  "uuid": "snx-vpn-indicator@diegodario88.github.io",
+  "version": 4,
+  "shell-version": [
+    "43"
+  ],
+  "url": "https://github.com/diegodario88/snx-vpn-indicator",
+  "name": "SNX VPN Indicator",
+  "description": "This extension adds VPN functionality to the quickSettings by integrating the SSL Network Extender (SNX CLI) client",
+  "settings-schema": "org.gnome.shell.extensions.snx-indicator",
+  "gettext-domain": "snx-indicator"
 }
