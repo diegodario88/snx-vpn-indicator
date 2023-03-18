@@ -5,7 +5,9 @@
 <img src="assets/screenshot.png" width="800">
 
 
-## With this extension, you can use the VPN functionality of the SSL Network Extender (SNX CLI) client directly from the quickSettings
+## With this extension, you can use the VPN functionality of the SSL Network Extender (SNX CLI) client directly from the Quick Settings.
+
+### Quick settings is a new user-interface pattern for the GNOME Shell [System Menu](https://help.gnome.org/users/gnome-help/stable/shell-introduction.html#systemmenu), available in GNOME 43 and later.
 
 ---
 
