@@ -22,7 +22,6 @@ var SnxToggle = GObject.registerClass(
 
       this.previousCancellable = null;
       this._mainItemsSection = new PopupMenu.PopupMenuSection();
-      this._secondaryItemsSection = new PopupMenu.PopupMenuSection();
       this._separator = new PopupMenu.PopupSeparatorMenuItem('Connector');
 
       this._popupSwitchMenuItem = new PopupMenu.PopupSwitchMenuItem(
@@ -34,7 +33,6 @@ var SnxToggle = GObject.registerClass(
       this.menu.setHeader(Util.getConstantByKey('ENABLED_VPN_ICON'), _('VPN'));
       this.menu.addMenuItem(this._mainItemsSection);
       this.menu.addMenuItem(this._separator);
-      this.menu.addMenuItem(this._secondaryItemsSection);
 
       this.connectObject(
         'clicked',
@@ -64,7 +62,7 @@ var SnxToggle = GObject.registerClass(
       const sessionParams = Util.parseSessionParameters(loginResponse);
 
       sessionParams.forEach((session) =>
-        this._secondaryItemsSection.addMenuItem(
+        this.menu.addMenuItem(
           new PopupMenu.PopupMenuItem(
             `${session.label.trim()} : ${session.value.trim()}`
           )
@@ -72,11 +70,16 @@ var SnxToggle = GObject.registerClass(
       );
 
       this._separator.label.text = 'Session parameters';
-      this.menu.addMenuItem(this._secondaryItemsSection);
     }
 
     _removeSessionParameters() {
-      this._secondaryItemsSection.removeAll();
+      const items = this.menu._getMenuItems();
+      items.forEach((item) => {
+        if (item instanceof PopupMenu.PopupMenuItem) {
+          item.destroy();
+        }
+      });
+
       this._separator.label.text = 'Connector';
     }
 
@@ -99,9 +102,10 @@ var SnxToggle = GObject.registerClass(
         );
 
         if (!passwordPromptOutput) {
-          this.checked = false;
-          this.icon_name = Util.getConstantByKey('DISABLED_VPN_ICON');
-          return;
+          throw new Gio.IOErrorEnum({
+            code: Gio.IOErrorEnum.FAILED,
+            message: 'No password'
+          });
         }
 
         const stdout = await Util.execCommunicate(
@@ -119,9 +123,6 @@ var SnxToggle = GObject.registerClass(
           loginResponse.includes('Access denied') ||
           loginResponse.includes('Authentication failed.')
         ) {
-          this.checked = false;
-          this.icon_name = Util.getConstantByKey('DISABLED_VPN_ICON');
-
           throw new Gio.IOErrorEnum({
             code: Gio.IOErrorEnum.FAILED,
             message: loginResponse
