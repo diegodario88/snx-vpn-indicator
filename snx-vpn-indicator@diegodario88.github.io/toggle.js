@@ -25,7 +25,7 @@ var SnxToggle = GObject.registerClass(
       this._separator = new PopupMenu.PopupSeparatorMenuItem('Connector');
 
       this._popupSwitchMenuItem = new PopupMenu.PopupSwitchMenuItem(
-        Util.getConstantByKey('SNX_LABEL'),
+        Util.getConstantByKey('SNX_LABEL_EXTENDED'),
         this.checked
       );
 
@@ -94,7 +94,7 @@ var SnxToggle = GObject.registerClass(
           [
             'zenity',
             '--password',
-            '--title=SNX VPN Authentication',
+            '--title=SSL Network Extender VPN Authentication ',
             '--timeout=20'
           ],
           null,
@@ -133,14 +133,12 @@ var SnxToggle = GObject.registerClass(
         this._addSessionParameters(loginResponse);
 
         Util.vpnNotify(
-          _('SNX VPN'),
           _('Successfully connected to VPN'),
           Util.getConstantByKey('ENABLED_VPN_ICON')
         );
       } catch (error) {
         if (error.code !== 14) {
           Util.vpnNotify(
-            _('SNX VPN'),
             _(error.message),
             Util.getConstantByKey('NO_ROUTE_VPN_ICON')
           );
@@ -161,14 +159,12 @@ var SnxToggle = GObject.registerClass(
         .then((output) => {
           this._removeSessionParameters();
           Util.vpnNotify(
-            _('SNX VPN'),
             _(output),
             Util.getConstantByKey('DISCONNECTED_VPN_ICON')
           );
         })
         .catch((error) => {
           Util.vpnNotify(
-            _('SNX VPN'),
             _(error.message),
             Util.getConstantByKey('NO_ROUTE_VPN_ICON')
           );

@@ -88,6 +88,7 @@ function getConstantByKey(key) {
   const constants = {
     SNX_DEVICE_NAME: 'tunsnx',
     SNX_LABEL: 'SNX VPN',
+    SNX_LABEL_EXTENDED: 'SSL Network Extender',
     ENABLED_VPN_ICON: 'network-vpn-symbolic',
     DISABLED_VPN_ICON: 'network-vpn-disabled-symbolic',
     DISCONNECTED_VPN_ICON: 'network-vpn-disconnected-symbolic',
@@ -99,12 +100,10 @@ function getConstantByKey(key) {
 }
 
 /**
- *
- * @param {string} text
  * @param {string} body
  * @param {string} icon
  */
-function vpnNotify(text, body, icon) {
+function vpnNotify(body, icon) {
   const source = new imports.ui.messageTray.Source(
     _(getConstantByKey('SNX_LABEL')),
     icon
@@ -114,7 +113,7 @@ function vpnNotify(text, body, icon) {
 
   const notification = new imports.ui.messageTray.Notification(
     source,
-    text,
+    _(getConstantByKey('SNX_LABEL_EXTENDED')),
     body
   );
 
