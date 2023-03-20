@@ -2,7 +2,6 @@ const Main = imports.ui.main;
 const { Gio, GObject } = imports.gi;
 const QuickSettings = imports.ui.quickSettings;
 const PopupMenu = imports.ui.popupMenu;
-
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Util = Me.imports.util;
@@ -10,15 +9,23 @@ const Util = Me.imports.util;
 var SnxToggle = GObject.registerClass(
   class SnxToggle extends QuickSettings.QuickMenuToggle {
     _init(hasTunsnxDevice = false) {
-      super._init({
-        label: Util.getConstantByKey('SNX_LABEL'),
-        iconName: hasTunsnxDevice
-          ? Util.getConstantByKey('ENABLED_VPN_ICON')
-          : Util.getConstantByKey('DISABLED_VPN_ICON'),
+      const config = {
         toggleMode: true,
         hasMenu: true,
         checked: hasTunsnxDevice
-      });
+      };
+
+      if (Util.getGnomeShellVersion() > 43) {
+        config.title = Util.getConstantByKey('SNX_LABEL');
+      } else {
+        config.label = Util.getConstantByKey('SNX_LABEL');
+      }
+
+      super._init(config);
+
+      this.iconName = hasTunsnxDevice
+        ? Util.getConstantByKey('ENABLED_VPN_ICON')
+        : Util.getConstantByKey('DISABLED_VPN_ICON');
 
       this.previousCancellable = null;
       this._mainItemsSection = new PopupMenu.PopupMenuSection();

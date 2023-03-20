@@ -5,6 +5,8 @@
  */
 
 const { Gio, GLib } = imports.gi;
+const Config = imports.misc.config;
+const [major, minor] = Config.PACKAGE_VERSION.split('.').map((s) => Number(s));
 
 /**
  * Execute a command asynchronously and return the output from `stdout` on
@@ -119,4 +121,12 @@ function vpnNotify(body, icon) {
 
   notification.setTransient(true);
   source.showNotification(notification);
+}
+
+/**
+ *
+ * @returns {number} major version
+ */
+function getGnomeShellVersion() {
+  return major;
 }

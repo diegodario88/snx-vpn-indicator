@@ -2,7 +2,8 @@
   "uuid": "snx-vpn-indicator@diegodario88.github.io",
   "version": 4,
   "shell-version": [
-    "43"
+    "43",
+    "44"
   ],
   "url": "https://github.com/diegodario88/snx-vpn-indicator",
   "name": "SNX VPN Indicator",

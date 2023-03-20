@@ -23,7 +23,22 @@ var SnxIndicator = GObject.registerClass(
       });
 
       QuickSettingsMenu._indicators.insert_child_at_index(this, 0);
+      this.addQuickSettingsItems();
+    }
+
+    addQuickSettingsItems() {
       QuickSettingsMenu._addItems(this.quickSettingsItems);
+
+      if (Util.getGnomeShellVersion() < 44) {
+        return;
+      }
+
+      for (const item of this.quickSettingsItems) {
+        QuickSettingsMenu.menu._grid.set_child_below_sibling(
+          item,
+          QuickSettingsMenu._backgroundApps.quickSettingsItems[0]
+        );
+      }
     }
 
     hide() {
