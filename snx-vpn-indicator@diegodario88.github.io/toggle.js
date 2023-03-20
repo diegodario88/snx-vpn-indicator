@@ -23,7 +23,7 @@ var SnxToggle = GObject.registerClass(
 
       super._init(config);
 
-      this.iconName = hasTunsnxDevice
+      this.icon_name = hasTunsnxDevice
         ? Util.getConstantByKey('ENABLED_VPN_ICON')
         : Util.getConstantByKey('DISABLED_VPN_ICON');
 
