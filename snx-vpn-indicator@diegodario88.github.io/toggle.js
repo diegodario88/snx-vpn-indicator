@@ -16,28 +16,28 @@ var SnxToggle = GObject.registerClass(
       };
 
       if (Util.getGnomeShellVersion() > 43) {
-        config.title = Util.getConstantByKey('SNX_LABEL');
+        config.title = Util.CONSTANTS['SNX_LABEL'];
       } else {
-        config.label = Util.getConstantByKey('SNX_LABEL');
+        config.label = Util.CONSTANTS['SNX_LABEL'];
       }
 
       super._init(config);
 
       this.icon_name = hasTunsnxDevice
-        ? Util.getConstantByKey('ENABLED_VPN_ICON')
-        : Util.getConstantByKey('DISABLED_VPN_ICON');
+        ? Util.CONSTANTS['ENABLED_VPN_ICON']
+        : Util.CONSTANTS['DISABLED_VPN_ICON'];
 
       this.previousCancellable = null;
       this._mainItemsSection = new PopupMenu.PopupMenuSection();
       this._separator = new PopupMenu.PopupSeparatorMenuItem('Connector');
 
       this._popupSwitchMenuItem = new PopupMenu.PopupSwitchMenuItem(
-        Util.getConstantByKey('SNX_LABEL_EXTENDED'),
+        Util.CONSTANTS['SNX_LABEL_EXTENDED'],
         this.checked
       );
 
       this._mainItemsSection.addMenuItem(this._popupSwitchMenuItem);
-      this.menu.setHeader(Util.getConstantByKey('ENABLED_VPN_ICON'), _('VPN'));
+      this.menu.setHeader(Util.CONSTANTS['ENABLED_VPN_ICON'], _('VPN'));
       this.menu.addMenuItem(this._mainItemsSection);
       this.menu.addMenuItem(this._separator);
 
@@ -66,6 +66,7 @@ var SnxToggle = GObject.registerClass(
      * @param {string} loginResponse
      */
     _addSessionParameters(loginResponse) {
+      this._removeSessionParameters();
       const sessionParams = Util.parseSessionParameters(loginResponse);
 
       sessionParams.forEach((session) =>
@@ -101,7 +102,7 @@ var SnxToggle = GObject.registerClass(
           [
             'zenity',
             '--password',
-            '--title=SSL Network Extender VPN Authentication ',
+            '--title=SNX VPN Authentication ',
             '--timeout=20'
           ],
           null,
@@ -126,33 +127,30 @@ var SnxToggle = GObject.registerClass(
           .trimEnd()
           .trimStart();
 
-        if (
-          loginResponse.includes('Access denied') ||
-          loginResponse.includes('Authentication failed.')
-        ) {
+        if (!loginResponse.includes('Session parameters:')) {
           throw new Gio.IOErrorEnum({
             code: Gio.IOErrorEnum.FAILED,
             message: loginResponse
           });
         }
 
-        this.icon_name = Util.getConstantByKey('ENABLED_VPN_ICON');
         this._addSessionParameters(loginResponse);
 
-        Util.vpnNotify(
+        Util.VPN_NOTIFY(
           _('Successfully connected to VPN'),
-          Util.getConstantByKey('ENABLED_VPN_ICON')
+          Util.CONSTANTS['ENABLED_VPN_ICON']
         );
       } catch (error) {
+        logError(error);
         if (error.code !== 14) {
-          Util.vpnNotify(
+          Util.VPN_NOTIFY(
             _(error.message),
-            Util.getConstantByKey('NO_ROUTE_VPN_ICON')
+            Util.CONSTANTS['NO_ROUTE_VPN_ICON']
           );
         }
 
         this.checked = false;
-        this.icon_name = Util.getConstantByKey('DISABLED_VPN_ICON');
+        this.icon_name = Util.CONSTANTS['DISABLED_VPN_ICON'];
       }
     }
 
@@ -161,21 +159,19 @@ var SnxToggle = GObject.registerClass(
      * @param {Gio.Cancellable} cancellable
      * @returns void
      */
-    _handleUncheckedAction(cancellable) {
-      Util.execCommunicate(['/usr/bin/snx', '-d'], null, cancellable)
-        .then((output) => {
-          this._removeSessionParameters();
-          Util.vpnNotify(
-            _(output),
-            Util.getConstantByKey('DISCONNECTED_VPN_ICON')
-          );
-        })
-        .catch((error) => {
-          Util.vpnNotify(
-            _(error.message),
-            Util.getConstantByKey('NO_ROUTE_VPN_ICON')
-          );
-        });
+    async _handleUncheckedAction(cancellable) {
+      try {
+        const output = await Util.execCommunicate(
+          ['/usr/bin/snx', '-d'],
+          null,
+          cancellable
+        );
+
+        Util.VPN_NOTIFY(_(output), Util.CONSTANTS['DISCONNECTED_VPN_ICON']);
+      } catch (error) {
+        logError(error);
+        Util.VPN_NOTIFY(_(error.message), Util.CONSTANTS['NO_ROUTE_VPN_ICON']);
+      }
     }
 
     async _toggleMode() {
@@ -184,7 +180,7 @@ var SnxToggle = GObject.registerClass(
       }
 
       const cancellable = new Gio.Cancellable();
-      this.icon_name = Util.getConstantByKey('ACQUIRING_VPN_ICON');
+      this.icon_name = Util.CONSTANTS['ACQUIRING_VPN_ICON'];
 
       if (this.checked) {
         this._handleCheckedAction(cancellable);
