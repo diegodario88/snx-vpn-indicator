@@ -83,10 +83,7 @@ class Extension {
     return this._networkManagerClient
       .get_devices()
       .map((device) => device.get_description().trim())
-      .some(
-        (description) =>
-          description === Util.getConstantByKey('SNX_DEVICE_NAME')
-      );
+      .some((description) => description === Util.CONSTANTS['SNX_DEVICE_NAME']);
   }
 
   /**
@@ -97,8 +94,7 @@ class Extension {
    */
   handleOnAnyDeviceAdded(_, device) {
     const description = device.get_description();
-    const shouldAvoid =
-      description !== Util.getConstantByKey('SNX_DEVICE_NAME');
+    const shouldAvoid = description !== Util.CONSTANTS['SNX_DEVICE_NAME'];
 
     if (shouldAvoid) {
       return;
@@ -115,14 +111,15 @@ class Extension {
    */
   handleOnAnyDeviceRemoved(_, device) {
     const description = device.get_description();
-    const shouldAvoid =
-      description !== Util.getConstantByKey('SNX_DEVICE_NAME');
+    const shouldAvoid = description !== Util.CONSTANTS['SNX_DEVICE_NAME'];
 
     if (shouldAvoid) {
       return;
     }
 
-    this._indicator.hide();
+    const stateReasonCode = device.get_state_reason();
+    const reason = Util.NMDeviceStateReason[stateReasonCode];
+    this._indicator.hide(reason);
   }
 }
 

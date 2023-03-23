@@ -13,7 +13,7 @@ var SnxIndicator = GObject.registerClass(
       super._init();
 
       this._indicator = this._addIndicator();
-      this._indicator.icon_name = Util.getConstantByKey('ENABLED_VPN_ICON');
+      this._indicator.icon_name = Util.CONSTANTS['ENABLED_VPN_ICON'];
       this._indicator.visible = hasTunsnxDevice;
       this._snxToggle = new Toggle.SnxToggle(hasTunsnxDevice);
       this.quickSettingsItems.push(this._snxToggle);
@@ -41,16 +41,21 @@ var SnxIndicator = GObject.registerClass(
       }
     }
 
-    hide() {
+    /**
+     * @param {string} reason
+     */
+    hide(reason) {
+      log(`[SnxIndicator] hide: ${reason}`);
       this._indicator.visible = false;
       this._snxToggle.checked = false;
-      this._snxToggle.icon_name = Util.getConstantByKey('DISABLED_VPN_ICON');
+      this._snxToggle.icon_name = Util.CONSTANTS['DISABLED_VPN_ICON'];
+      this._snxToggle._removeSessionParameters();
     }
 
     show() {
       this._indicator.visible = true;
       this._snxToggle.checked = true;
-      this._snxToggle.icon_name = Util.getConstantByKey('ENABLED_VPN_ICON');
+      this._snxToggle.icon_name = Util.CONSTANTS['ENABLED_VPN_ICON'];
     }
   }
 );
