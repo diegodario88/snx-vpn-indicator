@@ -18,15 +18,14 @@
  * If this extension breaks your desktop you get to keep all of the pieces...
  */
 
-const { NM } = imports.gi;
+import NM from 'gi://NM';
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import { SnxIndicator } from './indicator.js';
+import { CONSTANTS, NMDeviceStateReason } from './util.js';
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-const Util = Me.imports.util;
-const Indicator = Me.imports.indicator;
-
-class Extension {
-  constructor() {
+export default class SnxVPNExtension extends Extension {
+  constructor(metadata) {
+    super(metadata);
     this._indicator = null;
     this._networkManagerClient = null;
   }
@@ -41,7 +40,7 @@ class Extension {
   enable() {
     this._networkManagerClient = NM.Client.new(null);
     const hasSNX = this.isTunsnxDevicePresent();
-    this._indicator = new Indicator.SnxIndicator(hasSNX);
+    this._indicator = new SnxIndicator(hasSNX, this.path);
 
     this._networkManagerClient.connect(
       'any-device-added',
@@ -83,7 +82,7 @@ class Extension {
     return this._networkManagerClient
       .get_devices()
       .map((device) => device.get_description().trim())
-      .some((description) => description === Util.CONSTANTS['SNX_DEVICE_NAME']);
+      .some((description) => description === CONSTANTS['SNX_DEVICE_NAME']);
   }
 
   /**
@@ -94,7 +93,7 @@ class Extension {
    */
   handleOnAnyDeviceAdded(_, device) {
     const description = device.get_description();
-    const shouldAvoid = description !== Util.CONSTANTS['SNX_DEVICE_NAME'];
+    const shouldAvoid = description !== CONSTANTS['SNX_DEVICE_NAME'];
 
     if (shouldAvoid) {
       return;
@@ -111,30 +110,14 @@ class Extension {
    */
   handleOnAnyDeviceRemoved(_, device) {
     const description = device.get_description();
-    const shouldAvoid = description !== Util.CONSTANTS['SNX_DEVICE_NAME'];
+    const shouldAvoid = description !== CONSTANTS['SNX_DEVICE_NAME'];
 
     if (shouldAvoid) {
       return;
     }
 
     const stateReasonCode = device.get_state_reason();
-    const reason = Util.NMDeviceStateReason[stateReasonCode];
+    const reason = NMDeviceStateReason[stateReasonCode];
     this._indicator.hide(reason);
   }
-}
-
-/**
- * This function is called once when your extension is loaded, not enabled. This
- * is a good time to setup translations or anything else you only do once.
- *
- * You MUST NOT make any changes to GNOME Shell, connect any signals or add any
- * MainLoop sources here.
- *
- * @param {ExtensionMeta} meta - An extension meta object, described below.
- * @returns {Object} an object with enable() and disable() methods
- */
-function init(meta) {
-  log(`initializing ${meta.metadata.name} version ${meta.metadata.version}`);
-  ExtensionUtils.initTranslations();
-  return new Extension();
 }

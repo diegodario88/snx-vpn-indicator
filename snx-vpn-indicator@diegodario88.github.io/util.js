@@ -4,9 +4,13 @@
  * @property {string} value - 192.123.124.1
  */
 
-const { Gio, GLib } = imports.gi;
-const Config = imports.misc.config;
-const [major, minor] = Config.PACKAGE_VERSION.split('.').map((s) => Number(s));
+import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import {
+  Notification,
+  Source
+} from 'resource:///org/gnome/shell/ui/messageTray.js';
 
 /**
  * Execute a command asynchronously and return the output from `stdout` on
@@ -20,7 +24,7 @@ const [major, minor] = Config.PACKAGE_VERSION.split('.').map((s) => Number(s));
  * @param {Gio.Cancellable} [cancellable] - optional cancellable object
  * @returns {Promise<string>} - The process output
  */
-async function execCommunicate(argv, input = null, cancellable = null) {
+export async function execCommunicate(argv, input = null, cancellable = null) {
   let cancelId = 0;
   let flags = Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE;
 
@@ -70,7 +74,7 @@ async function execCommunicate(argv, input = null, cancellable = null) {
  * @param {string} formattedString - The formatted string to extract parameters from.
  * @returns {SessionParameters[]} An array containing the extracted session parameters.
  */
-function parseSessionParameters(formattedString) {
+export function parseSessionParameters(formattedString) {
   return formattedString
     .split(/\r?\n|\r/g)
     .splice(4, 4)
@@ -84,15 +88,12 @@ function parseSessionParameters(formattedString) {
  * @param {string} body
  * @param {string} icon
  */
-function VPN_NOTIFY(body, icon) {
-  const source = new imports.ui.messageTray.Source(
-    _(CONSTANTS['SNX_LABEL']),
-    icon
-  );
+export function VPN_NOTIFY(body, icon) {
+  const source = new Source(_(CONSTANTS['SNX_LABEL']), icon);
 
-  imports.ui.main.messageTray.add(source);
+  Main.messageTray.add(source);
 
-  const notification = new imports.ui.messageTray.Notification(
+  const notification = new Notification(
     source,
     _(CONSTANTS['SNX_LABEL_EXTENDED']),
     body
@@ -102,15 +103,7 @@ function VPN_NOTIFY(body, icon) {
   source.showNotification(notification);
 }
 
-/**
- *
- * @returns {number} major version
- */
-function getGnomeShellVersion() {
-  return major;
-}
-
-var CONSTANTS = {
+export const CONSTANTS = {
   SNX_DEVICE_NAME: 'tunsnx',
   SNX_LABEL: 'SNX VPN',
   SNX_LABEL_EXTENDED: 'SSL Network Extender',
@@ -122,7 +115,7 @@ var CONSTANTS = {
   HOME_DIR: GLib.get_home_dir()
 };
 
-var NMDeviceStateReason = {
+export const NMDeviceStateReason = {
   0: 'No reason given',
   1: 'Unknown error',
   2: 'Device is now managed',

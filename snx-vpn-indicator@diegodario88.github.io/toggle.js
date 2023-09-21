@@ -1,43 +1,48 @@
-const Main = imports.ui.main;
-const { Gio, GObject } = imports.gi;
-const QuickSettings = imports.ui.quickSettings;
-const PopupMenu = imports.ui.popupMenu;
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-const Util = Me.imports.util;
+import GObject from 'gi://GObject';
+import Gio from 'gi://Gio';
+import {
+  PopupMenuSection,
+  PopupSeparatorMenuItem,
+  PopupSwitchMenuItem,
+  PopupMenuItem
+} from 'resource:///org/gnome/shell/ui/popupMenu.js';
+import { QuickMenuToggle } from 'resource:///org/gnome/shell/ui/quickSettings.js';
+import {
+  CONSTANTS,
+  VPN_NOTIFY,
+  execCommunicate,
+  parseSessionParameters
+} from './util.js';
 
-var SnxToggle = GObject.registerClass(
-  class SnxToggle extends QuickSettings.QuickMenuToggle {
-    _init(hasTunsnxDevice = false) {
+export const SnxToggle = GObject.registerClass(
+  class SnxToggle extends QuickMenuToggle {
+    _init(hasTunsnxDevice = false, cwd) {
       const config = {
         toggleMode: true,
         hasMenu: true,
         checked: hasTunsnxDevice
       };
 
-      if (Util.getGnomeShellVersion() > 43) {
-        config.title = Util.CONSTANTS['SNX_LABEL'];
-      } else {
-        config.label = Util.CONSTANTS['SNX_LABEL'];
-      }
+      config.title = CONSTANTS['SNX_LABEL'];
 
       super._init(config);
 
+      this.cwd = cwd;
       this.icon_name = hasTunsnxDevice
-        ? Util.CONSTANTS['ENABLED_VPN_ICON']
-        : Util.CONSTANTS['DISABLED_VPN_ICON'];
+        ? CONSTANTS['ENABLED_VPN_ICON']
+        : CONSTANTS['DISABLED_VPN_ICON'];
 
       this.previousCancellable = null;
-      this._mainItemsSection = new PopupMenu.PopupMenuSection();
-      this._separator = new PopupMenu.PopupSeparatorMenuItem('Connector');
+      this._mainItemsSection = new PopupMenuSection();
+      this._separator = new PopupSeparatorMenuItem('Connector');
 
-      this._popupSwitchMenuItem = new PopupMenu.PopupSwitchMenuItem(
-        Util.CONSTANTS['SNX_LABEL_EXTENDED'],
+      this._popupSwitchMenuItem = new PopupSwitchMenuItem(
+        CONSTANTS['SNX_LABEL_EXTENDED'],
         this.checked
       );
 
       this._mainItemsSection.addMenuItem(this._popupSwitchMenuItem);
-      this.menu.setHeader(Util.CONSTANTS['ENABLED_VPN_ICON'], _('VPN'));
+      this.menu.setHeader(CONSTANTS['ENABLED_VPN_ICON'], _('VPN'));
       this.menu.addMenuItem(this._mainItemsSection);
       this.menu.addMenuItem(this._separator);
 
@@ -67,13 +72,11 @@ var SnxToggle = GObject.registerClass(
      */
     _addSessionParameters(loginResponse) {
       this._removeSessionParameters();
-      const sessionParams = Util.parseSessionParameters(loginResponse);
+      const sessionParams = parseSessionParameters(loginResponse);
 
       sessionParams.forEach((session) =>
         this.menu.addMenuItem(
-          new PopupMenu.PopupMenuItem(
-            `${session.label.trim()} : ${session.value.trim()}`
-          )
+          new PopupMenuItem(`${session.label.trim()} : ${session.value.trim()}`)
         )
       );
 
@@ -83,7 +86,7 @@ var SnxToggle = GObject.registerClass(
     _removeSessionParameters() {
       const items = this.menu._getMenuItems();
       items.forEach((item) => {
-        if (item instanceof PopupMenu.PopupMenuItem) {
+        if (item instanceof PopupMenuItem) {
           item.destroy();
         }
       });
@@ -98,7 +101,7 @@ var SnxToggle = GObject.registerClass(
      */
     async _handleCheckedAction(cancellable) {
       try {
-        const passwordPromptOutput = await Util.execCommunicate(
+        const passwordPromptOutput = await execCommunicate(
           [
             'zenity',
             '--password',
@@ -116,8 +119,8 @@ var SnxToggle = GObject.registerClass(
           });
         }
 
-        const stdout = await Util.execCommunicate(
-          [`${Me.dir.get_path()}/bridge-snx-cli.sh`, passwordPromptOutput],
+        const stdout = await execCommunicate(
+          [`${this.cwd}/bridge-snx-cli.sh`, passwordPromptOutput],
           null
         );
 
@@ -136,21 +139,18 @@ var SnxToggle = GObject.registerClass(
 
         this._addSessionParameters(loginResponse);
 
-        Util.VPN_NOTIFY(
+        VPN_NOTIFY(
           _('Successfully connected to VPN'),
-          Util.CONSTANTS['ENABLED_VPN_ICON']
+          CONSTANTS['ENABLED_VPN_ICON']
         );
       } catch (error) {
         logError(error);
         if (error.code !== 14) {
-          Util.VPN_NOTIFY(
-            _(error.message),
-            Util.CONSTANTS['NO_ROUTE_VPN_ICON']
-          );
+          VPN_NOTIFY(_(error.message), CONSTANTS['NO_ROUTE_VPN_ICON']);
         }
 
         this.checked = false;
-        this.icon_name = Util.CONSTANTS['DISABLED_VPN_ICON'];
+        this.icon_name = CONSTANTS['DISABLED_VPN_ICON'];
       }
     }
 
@@ -161,16 +161,16 @@ var SnxToggle = GObject.registerClass(
      */
     async _handleUncheckedAction(cancellable) {
       try {
-        const output = await Util.execCommunicate(
+        const output = await execCommunicate(
           ['/usr/bin/snx', '-d'],
           null,
           cancellable
         );
 
-        Util.VPN_NOTIFY(_(output), Util.CONSTANTS['DISCONNECTED_VPN_ICON']);
+        VPN_NOTIFY(_(output), CONSTANTS['DISCONNECTED_VPN_ICON']);
       } catch (error) {
         logError(error);
-        Util.VPN_NOTIFY(_(error.message), Util.CONSTANTS['NO_ROUTE_VPN_ICON']);
+        VPN_NOTIFY(_(error.message), CONSTANTS['NO_ROUTE_VPN_ICON']);
       }
     }
 
@@ -180,7 +180,7 @@ var SnxToggle = GObject.registerClass(
       }
 
       const cancellable = new Gio.Cancellable();
-      this.icon_name = Util.CONSTANTS['ACQUIRING_VPN_ICON'];
+      this.icon_name = CONSTANTS['ACQUIRING_VPN_ICON'];
 
       if (this.checked) {
         this._handleCheckedAction(cancellable);
