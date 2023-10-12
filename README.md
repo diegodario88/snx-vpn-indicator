@@ -63,3 +63,12 @@ git clone https://github.com/diegodario88/vpn-snx-indicator.git
     sudo zypper install expect
     ```
 ---
+
+
+## Like this Extension?
+
+If you want to help me with this, consider buying me a coffee. :)
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Y8Y8Q12UV)
+
+Made with ❤️

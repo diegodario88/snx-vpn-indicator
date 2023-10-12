@@ -1,7 +1,6 @@
 import GObject from 'gi://GObject';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {
-  QuickSettingsMenu,
   SystemIndicator
 } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 import { SnxToggle } from './toggle.js';
