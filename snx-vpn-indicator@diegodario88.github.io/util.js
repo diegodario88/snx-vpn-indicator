@@ -7,6 +7,7 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as MessageTray from 'resource:///org/gnome/shell/ui/messageTray.js';
 import {
   Notification,
   Source
@@ -89,18 +90,19 @@ export function parseSessionParameters(formattedString) {
  * @param {string} icon
  */
 export function VPN_NOTIFY(body, icon) {
-  const source = new Source(_(CONSTANTS['SNX_LABEL']), icon);
+  const source = new MessageTray.getSystemSource();
+  const params = {
+    source: source,
+    title: 'Check Point',
+    body: body,
+    isTransient: true
+  };
 
-  Main.messageTray.add(source);
+  const notification = new MessageTray.Notification(params);
 
-  const notification = new Notification(
-    source,
-    _(CONSTANTS['SNX_LABEL_EXTENDED']),
-    body
-  );
+  notification.set({ iconName: icon });
 
-  notification.setTransient(true);
-  source.showNotification(notification);
+  source.addNotification(notification);
 }
 
 export const CONSTANTS = {

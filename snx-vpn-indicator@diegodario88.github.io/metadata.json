@@ -1,13 +1,13 @@
 {
   "uuid": "snx-vpn-indicator@diegodario88.github.io",
   "version": 6,
-  "shell-version": [ "45" ],
+  "shell-version": ["45", "46"],
   "url": "https://github.com/diegodario88/snx-vpn-indicator",
   "name": "SNX VPN Indicator",
   "description": "This extension adds VPN functionality to the quickSettings by integrating the SSL Network Extender (SNX CLI) client",
   "gettext-domain": "snx-indicator",
   "donations": {
-			"github": "diegodario88",
-			"kofi": "diegodario"
-		}
+    "github": "diegodario88",
+    "kofi": "diegodario"
+  }
 }
