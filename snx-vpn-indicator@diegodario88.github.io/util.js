@@ -6,12 +6,7 @@
 
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
-import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as MessageTray from 'resource:///org/gnome/shell/ui/messageTray.js';
-import {
-  Notification,
-  Source
-} from 'resource:///org/gnome/shell/ui/messageTray.js';
 
 /**
  * Execute a command asynchronously and return the output from `stdout` on

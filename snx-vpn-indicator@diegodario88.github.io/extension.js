@@ -1,6 +1,6 @@
 /*
  * Snx VPN Indicator for GNOME Shell 43+
- * Copyright 2023 Diego Dario
+ * Copyright 2024 Diego Dario
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

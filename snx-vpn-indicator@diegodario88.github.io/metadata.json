@@ -6,6 +6,7 @@
   "name": "SNX VPN Indicator",
   "description": "This extension adds VPN functionality to the quickSettings by integrating the SSL Network Extender (SNX CLI) client",
   "gettext-domain": "snx-indicator",
+  "version-name": "1.6.2",
   "donations": {
     "github": "diegodario88",
     "kofi": "diegodario"
